@@ -1,888 +1,335 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  }
+/* =====================================================
+   TETRON AI
+   PHASE 1 — CORE ACTIONS
+   ===================================================== */
 
-:root {
---bg: #080a0f;
---sidebar: #0d1017;
---card: #11151e;
---card-hover: #171c27;
---border: rgba(255,255,255,0.08);
+document.addEventListener("DOMContentLoaded", () => {
 
---text: #f5f7fb;
---muted: #8d96a8;
+    /* =================================================
+       ELEMENTS
+       ================================================= */
 
---primary: #7567ff;
---secondary: #00d9ff;
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.getElementById("menuBtn");
+    const closeSidebar = document.getElementById("closeSidebar");
+    const overlay = document.getElementById("overlay");
 
-}
+    const newChatBtn = document.getElementById("newChat");
 
-html,
-body {
-width: 100%;
-min-height: 100%;
-}
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
 
-body {
-font-family: Arial, Helvetica, sans-serif;
-background: var(--bg);
-color: var(--text);
-}
+    const messages = document.getElementById("messages");
+    const welcome = document.getElementById("welcome");
 
-button,
-textarea {
-font-family: inherit;
-}
+    const themeBtn = document.getElementById("themeBtn");
 
-button {
--webkit-tap-highlight-color: transparent;
-}
+    const suggestions =
+        document.querySelectorAll(".suggestion");
 
-/* =========================
-APP
-========================= */
+    const chatItems =
+        document.querySelectorAll(".chat-item");
 
-.app {
-display: flex;
-min-height: 100vh;
-}
 
-/* =========================
-SIDEBAR
-========================= */
+    /* =================================================
+       MOBILE SIDEBAR
+       ================================================= */
 
-.sidebar {
-width: 270px;
-height: 100vh;
+    function openSidebar() {
 
-position: fixed;
-left: 0;
-top: 0;
+        sidebar.classList.add("open");
+        overlay.classList.add("active");
 
-display: flex;
-flex-direction: column;
+    }
 
-padding: 18px;
+    function closeMenu() {
 
-background: var(--sidebar);
+        sidebar.classList.remove("open");
+        overlay.classList.remove("active");
 
-border-right: 1px solid var(--border);
+    }
 
-z-index: 100;
+    if (menuBtn) {
 
-}
+        menuBtn.addEventListener("click", openSidebar);
 
-.sidebar-top {
-display: flex;
-align-items: center;
-justify-content: space-between;
+    }
 
-margin-bottom: 25px;
+    if (closeSidebar) {
 
-}
+        closeSidebar.addEventListener("click", closeMenu);
 
-.brand {
-display: flex;
-align-items: center;
-gap: 11px;
-}
+    }
 
-.brand-logo {
-width: 42px;
-height: 42px;
+    if (overlay) {
 
-display: flex;
-align-items: center;
-justify-content: center;
+        overlay.addEventListener("click", closeMenu);
 
-border-radius: 12px;
-overflow: hidden;
+    }
 
-background:
-    linear-gradient(
-        135deg,
-        var(--primary),
-        var(--secondary)
+
+    /* =================================================
+       NEW CHAT
+       ================================================= */
+
+    if (newChatBtn) {
+
+        newChatBtn.addEventListener("click", () => {
+
+            messages.innerHTML = "";
+
+            welcome.style.display = "flex";
+
+            messageInput.value = "";
+
+            messageInput.focus();
+
+            chatItems.forEach(item => {
+
+                item.classList.remove("active");
+
+            });
+
+            closeMenu();
+
+        });
+
+    }
+
+
+    /* =================================================
+       SUGGESTION ACTIONS
+       ================================================= */
+
+    suggestions.forEach((card) => {
+
+        card.addEventListener("click", () => {
+
+            const title =
+                card.querySelector("strong")?.textContent.trim();
+
+            const prompts = {
+
+                "Explore ideas":
+                    "Help me brainstorm some creative ideas.",
+
+                "Study with me":
+                    "Help me study a topic and explain it simply.",
+
+                "Write code":
+                    "Help me write or debug some code.",
+
+                "Create something":
+                    "Help me create something interesting."
+
+            };
+
+            messageInput.value =
+                prompts[title] || "";
+
+            messageInput.focus();
+
+            autoResize();
+
+        });
+
+    });
+
+
+    /* =================================================
+       SEND MESSAGE
+       ================================================= */
+
+    function sendMessage() {
+
+        const text =
+            messageInput.value.trim();
+
+        if (!text) {
+
+            messageInput.focus();
+
+            return;
+
+        }
+
+
+        /* Hide welcome screen */
+
+        welcome.style.display = "none";
+
+
+        /* Create USER message */
+
+        const userMessage =
+            document.createElement("div");
+
+        userMessage.className =
+            "user-message";
+
+        userMessage.textContent =
+            text;
+
+
+        messages.appendChild(userMessage);
+
+
+        /* Clear input */
+
+        messageInput.value = "";
+
+        autoResize();
+
+
+        /* Scroll */
+
+        messages.scrollTop =
+            messages.scrollHeight;
+
+
+        /*
+         * AI RESPONSE WILL BE CONNECTED
+         * IN THE NEXT PHASE.
+         */
+
+        setTimeout(() => {
+
+            const aiMessage =
+                document.createElement("div");
+
+            aiMessage.className =
+                "ai-message";
+
+            aiMessage.textContent =
+                "TETRON is ready. AI response will be connected in the next phase.";
+
+            messages.appendChild(aiMessage);
+
+            messages.scrollTop =
+                messages.scrollHeight;
+
+        }, 500);
+
+    }
+
+
+    if (sendBtn) {
+
+        sendBtn.addEventListener(
+            "click",
+            sendMessage
+        );
+
+    }
+
+
+    /* =================================================
+       ENTER / SHIFT + ENTER
+       ================================================= */
+
+    messageInput.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
     );
 
-box-shadow:
-    0 0 20px rgba(117,103,255,0.18);
 
-}
+    /* =================================================
+       TEXTAREA AUTO RESIZE
+       ================================================= */
 
-.brand-logo img {
-width: 100%;
-height: 100%;
-object-fit: contain;
-}
+    function autoResize() {
 
-.brand-info h2 {
-font-size: 18px;
-letter-spacing: 1px;
-}
+        messageInput.style.height = "auto";
 
-.brand-info span {
-display: block;
+        messageInput.style.height =
+            Math.min(
+                messageInput.scrollHeight,
+                120
+            ) + "px";
 
-margin-top: 3px;
+    }
 
-color: var(--muted);
-
-font-size: 10px;
-
-}
-
-/* CLOSE BUTTON */
-
-.close-sidebar {
-display: none;
-
-background: transparent;
-border: none;
-
-color: white;
-
-font-size: 25px;
-
-cursor: pointer;
-
-}
-
-/* =========================
-NEW CHAT
-========================= */
-
-.new-chat {
-width: 100%;
-
-padding: 13px;
-
-display: flex;
-align-items: center;
-justify-content: center;
-
-gap: 8px;
-
-border: 1px solid rgba(117,103,255,0.4);
-border-radius: 12px;
-
-background: rgba(117,103,255,0.12);
-
-color: white;
-
-font-size: 14px;
-font-weight: 600;
-
-cursor: pointer;
-
-transition: 0.2s;
-
-}
-
-.new-chat:hover {
-background: rgba(117,103,255,0.22);
-}
-
-/* =========================
-HISTORY
-========================= */
-
-.history {
-margin-top: 30px;
-
-flex: 1;
-
-overflow-y: auto;
-
-}
-
-.history-title {
-margin: 0 8px 12px;
-
-color: #687184;
-
-font-size: 10px;
-font-weight: bold;
-
-letter-spacing: 1.3px;
-
-}
-
-.chat-item {
-width: 100%;
-
-display: flex;
-align-items: center;
-
-gap: 10px;
-
-padding: 11px 12px;
-
-margin-bottom: 4px;
-
-border: none;
-border-radius: 9px;
-
-background: transparent;
-
-color: #aeb6c5;
-
-text-align: left;
-
-font-size: 13px;
-
-cursor: pointer;
-
-}
-
-.chat-item:hover,
-.chat-item.active {
-background: var(--card-hover);
-color: white;
-}
-
-.chat-item span {
-color: var(--primary);
-}
-
-/* =========================
-SIDEBAR BOTTOM
-========================= */
-
-.sidebar-bottom {
-border-top: 1px solid var(--border);
-
-padding-top: 12px;
-
-}
-
-.side-option {
-width: 100%;
-
-display: flex;
-align-items: center;
-
-gap: 12px;
-
-padding: 11px;
-
-border: none;
-border-radius: 9px;
-
-background: transparent;
-
-color: var(--muted);
-
-text-align: left;
-
-font-size: 13px;
-
-cursor: pointer;
-
-}
-
-.side-option:hover {
-background: var(--card);
-color: white;
-}
-
-/* =========================
-MAIN
-========================= */
-
-.main {
-width: calc(100% - 270px);
-
-margin-left: 270px;
-
-min-height: 100vh;
-
-display: flex;
-flex-direction: column;
-
-}
-
-/* =========================
-HEADER
-========================= */
-
-.header {
-height: 64px;
-
-padding: 0 22px;
-
-display: flex;
-align-items: center;
-
-border-bottom: 1px solid var(--border);
-
-background: rgba(8,10,15,0.85);
-
-backdrop-filter: blur(15px);
-
-position: sticky;
-
-top: 0;
-
-z-index: 50;
-
-}
-
-.menu-btn {
-display: none;
-
-border: none;
-
-background: transparent;
-
-color: white;
-
-font-size: 22px;
-
-cursor: pointer;
-
-}
-
-.mobile-brand {
-display: none;
-
-align-items: center;
-
-gap: 8px;
-
-}
-
-.mini-logo {
-width: 30px;
-height: 30px;
-
-display: flex;
-align-items: center;
-justify-content: center;
-
-border-radius: 8px;
-
-overflow: hidden;
-
-background:
-    linear-gradient(
-        135deg,
-        var(--primary),
-        var(--secondary)
+    messageInput.addEventListener(
+        "input",
+        autoResize
     );
 
-}
 
-.mini-logo img {
-width: 100%;
-height: 100%;
-object-fit: contain;
-}
+    /* =================================================
+       CHAT HISTORY
+       ================================================= */
 
-.header-actions {
-margin-left: auto;
+    chatItems.forEach((item) => {
 
-display: flex;
+        item.addEventListener("click", () => {
 
-gap: 8px;
+            chatItems.forEach(chat => {
 
-}
+                chat.classList.remove("active");
 
-.header-actions button {
-width: 38px;
-height: 38px;
+            });
 
-border: 1px solid var(--border);
+            item.classList.add("active");
 
-border-radius: 10px;
+            closeMenu();
 
-background: var(--card);
+        });
 
-color: #b8c0ce;
+    });
 
-cursor: pointer;
 
-}
+    /* =================================================
+       THEME BUTTON
+       ================================================= */
 
-.header-actions button:hover {
-color: white;
-}
+    let lightMode = false;
 
-/* =========================
-CHAT AREA
-========================= */
+    if (themeBtn) {
 
-.chat-area {
-flex: 1;
+        themeBtn.addEventListener("click", () => {
 
-width: 100%;
+            lightMode = !lightMode;
 
-max-width: 900px;
+            if (lightMode) {
 
-margin: auto;
+                document.body.classList.add(
+                    "light-mode"
+                );
 
-padding: 35px 25px 150px;
+                themeBtn.textContent = "☀";
 
-}
+            } else {
 
-/* =========================
-WELCOME
-========================= */
+                document.body.classList.remove(
+                    "light-mode"
+                );
 
-.welcome {
-min-height: 60vh;
+                themeBtn.textContent = "◐";
 
-display: flex;
-flex-direction: column;
+            }
 
-align-items: center;
-justify-content: center;
+        });
 
-text-align: center;
+    }
 
-}
 
-.welcome-logo {
-width: 70px;
-height: 70px;
+    /* =================================================
+       INITIALIZE
+       ================================================= */
 
-display: flex;
-align-items: center;
-justify-content: center;
+    autoResize();
 
-margin-bottom: 22px;
-
-border-radius: 22px;
-
-overflow: hidden;
-
-background:
-    linear-gradient(
-        135deg,
-        var(--primary),
-        var(--secondary)
-    );
-
-box-shadow:
-    0 0 35px rgba(117,103,255,0.3);
-
-}
-
-.welcome-logo img {
-width: 100%;
-height: 100%;
-
-object-fit: contain;
-
-}
-
-.welcome h1 {
-font-size: clamp(28px, 5vw, 44px);
-
-margin-bottom: 12px;
-
-}
-
-.welcome h1 span {
-background:
-linear-gradient(
-90deg,
-var(--primary),
-var(--secondary)
-);
-
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-
-}
-
-.welcome p {
-max-width: 500px;
-
-color: var(--muted);
-
-line-height: 1.6;
-
-font-size: 14px;
-
-}
-
-/* =========================
-SUGGESTIONS
-========================= */
-
-.suggestions {
-width: 100%;
-
-max-width: 650px;
-
-display: grid;
-
-grid-template-columns: 1fr 1fr;
-
-gap: 12px;
-
-margin-top: 35px;
-
-}
-
-.suggestion {
-padding: 17px;
-
-display: flex;
-flex-direction: column;
-
-gap: 7px;
-
-border: 1px solid var(--border);
-
-border-radius: 14px;
-
-background: var(--card);
-
-color: white;
-
-text-align: left;
-
-cursor: pointer;
-
-transition: 0.25s;
-
-}
-
-.suggestion:hover {
-transform: translateY(-3px);
-
-background: var(--card-hover);
-
-border-color:
-    rgba(117,103,255,0.45);
-
-}
-
-.suggestion strong {
-font-size: 13px;
-}
-
-.suggestion small {
-color: var(--muted);
-
-font-size: 11px;
-
-}
-
-/* =========================
-MESSAGES
-========================= */
-
-.messages {
-width: 100%;
-}
-
-.message {
-display: flex;
-
-gap: 12px;
-
-margin-bottom: 22px;
-
-}
-
-.message.user {
-justify-content: flex-end;
-}
-
-.message-content {
-max-width: 75%;
-
-padding: 13px 16px;
-
-border-radius: 14px;
-
-background: var(--card);
-
-line-height: 1.6;
-
-font-size: 14px;
-
-}
-
-.message.user .message-content {
-background:
-linear-gradient(
-135deg,
-#5d51d9,
-#4655c9
-);
-}
-
-/* =========================
-INPUT
-========================= */
-
-.input-area {
-width: 100%;
-
-padding: 12px 20px 18px;
-
-background:
-    linear-gradient(
-        to top,
-        var(--bg) 75%,
-        transparent
-    );
-
-position: fixed;
-
-bottom: 0;
-
-z-index: 40;
-
-}
-
-.input-box {
-max-width: 850px;
-
-margin: auto;
-
-display: flex;
-
-align-items: flex-end;
-
-gap: 7px;
-
-padding: 7px;
-
-border: 1px solid var(--border);
-
-border-radius: 17px;
-
-background: #10141d;
-
-}
-
-.input-box:focus-within {
-border-color:
-rgba(117,103,255,0.5);
-}
-
-#messageInput {
-flex: 1;
-
-min-height: 42px;
-
-max-height: 130px;
-
-padding: 11px;
-
-resize: none;
-
-border: none;
-
-outline: none;
-
-background: transparent;
-
-color: white;
-
-font-size: 14px;
-
-}
-
-#messageInput::placeholder {
-color: #687184;
-}
-
-.attach-btn,
-.voice-btn,
-.send-btn {
-width: 40px;
-height: 40px;
-
-flex-shrink: 0;
-
-border: none;
-
-border-radius: 11px;
-
-background: transparent;
-
-color: #8993a5;
-
-font-size: 17px;
-
-cursor: pointer;
-
-}
-
-.attach-btn:hover,
-.voice-btn:hover {
-background: var(--card-hover);
-
-color: white;
-
-}
-
-.send-btn {
-color: white;
-
-background:
-    linear-gradient(
-        135deg,
-        var(--primary),
-        var(--secondary)
-    );
-
-font-size: 20px;
-
-}
-
-.send-btn:hover {
-transform: scale(1.05);
-}
-
-.disclaimer {
-max-width: 850px;
-
-margin: 7px auto 0;
-
-text-align: center;
-
-color: #596274;
-
-font-size: 10px;
-
-}
-
-/* =========================
-OVERLAY
-========================= */
-
-.overlay {
-display: none;
-
-position: fixed;
-
-inset: 0;
-
-background: rgba(0,0,0,0.55);
-
-z-index: 90;
-
-}
-
-/* =========================
-MOBILE
-========================= */
-
-@media (max-width: 768px) {
-
-.sidebar {
-    width: 270px;
-
-    transform: translateX(-100%);
-
-    transition:
-        transform 0.25s ease;
-}
-
-.sidebar.open {
-    transform: translateX(0);
-}
-
-.close-sidebar {
-    display: block;
-}
-
-.overlay.show {
-    display: block;
-}
-
-.main {
-    width: 100%;
-
-    margin-left: 0;
-}
-
-.header {
-    padding: 0 14px;
-}
-
-.menu-btn {
-    display: block;
-}
-
-.mobile-brand {
-    display: flex;
-
-    margin-left: 12px;
-}
-
-.chat-area {
-    padding: 20px 14px 145px;
-}
-
-.welcome {
-    min-height: 65vh;
-}
-
-.welcome-logo {
-    width: 60px;
-    height: 60px;
-}
-
-.welcome h1 {
-    font-size: 29px;
-}
-
-.suggestions {
-    grid-template-columns: 1fr;
-
-    gap: 9px;
-
-    margin-top: 25px;
-}
-
-.suggestion {
-    padding: 14px;
-}
-
-.input-area {
-    padding: 8px 10px 12px;
-}
-
-.input-box {
-    border-radius: 14px;
-}
-
-.attach-btn,
-.voice-btn,
-.send-btn {
-    width: 37px;
-    height: 37px;
-}
-
-}
-
-/* =========================
-SMALL PHONES
-========================= */
-
-@media (max-width: 380px) {
-
-.welcome h1 {
-    font-size: 25px;
-}
-
-.welcome-logo {
-    width: 54px;
-    height: 54px;
-}
-
-.voice-btn {
-    display: none;
-}
-
-}
+});

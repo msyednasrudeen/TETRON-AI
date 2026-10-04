@@ -1,253 +1,366 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0"><title>TETRON AI</title>
 
-<link rel="icon" href="assets/favicon.png">
-<link rel="stylesheet" href="style.css">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-</head><body><div class="app"><!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
+    <title>TETRON AI</title>
 
-    <div class="sidebar-top">
+    <link rel="icon" href="assets/favicon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
 
-        <div class="brand">
+<body>
 
-            <div class="brand-logo">
-                <img src="logo.png" alt="TETRON Logo">
+<div class="app">
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-header">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    <img src="logo.png" alt="TETRON">
+                </div>
+
+                <div class="brand-text">
+                    <h2>TETRON</h2>
+                    <span>Think. Ask. Create.</span>
+                </div>
+
             </div>
 
-            <div class="brand-info">
-                <h2>TETRON</h2>
-                <span>Think. Ask. Create.</span>
-            </div>
+            <button
+                class="close-btn"
+                id="closeSidebar"
+                aria-label="Close menu"
+            >
+                ×
+            </button>
 
         </div>
 
-        <button class="close-sidebar" id="closeSidebar">
-            ×
-        </button>
 
-    </div>
+        <!-- NEW CHAT -->
 
+        <button class="new-chat" id="newChat">
 
-    <!-- NEW CHAT -->
-    <button class="new-chat" id="newChat">
-        <span>＋</span>
-        <span>New Chat</span>
-    </button>
+            <span class="plus">＋</span>
 
+            <span>New Chat</span>
 
-    <!-- CHAT HISTORY -->
-    <div class="history">
-
-        <p class="history-title">RECENT CHATS</p>
-
-        <button class="chat-item active">
-            <span>◌</span>
-            Welcome to TETRON
-        </button>
-
-        <button class="chat-item">
-            <span>◌</span>
-            Project ideas
-        </button>
-
-        <button class="chat-item">
-            <span>◌</span>
-            Study assistant
-        </button>
-
-    </div>
-
-
-    <!-- SIDEBAR BOTTOM -->
-    <div class="sidebar-bottom">
-
-        <button class="side-option">
-            ⚙️
-            <span>Settings</span>
-        </button>
-
-        <button class="side-option">
-            ?
-            <span>Help & Support</span>
-        </button>
-
-    </div>
-
-</aside>
-
-
-<!-- MAIN -->
-<main class="main">
-
-    <!-- HEADER -->
-    <header class="header">
-
-        <button class="menu-btn" id="menuBtn">
-            ☰
         </button>
 
 
-        <div class="mobile-brand">
+        <!-- CHAT HISTORY -->
 
-            <div class="mini-logo">
+        <div class="history">
+
+            <div class="history-title">
+                RECENT CHATS
+            </div>
+
+            <button class="chat-item active">
+
+                <span class="chat-icon">○</span>
+
+                <span>Welcome to TETRON</span>
+
+            </button>
+
+            <button class="chat-item">
+
+                <span class="chat-icon">○</span>
+
+                <span>Project ideas</span>
+
+            </button>
+
+            <button class="chat-item">
+
+                <span class="chat-icon">○</span>
+
+                <span>Study assistant</span>
+
+            </button>
+
+        </div>
+
+
+        <!-- SIDEBAR BOTTOM -->
+
+        <div class="sidebar-bottom">
+
+            <button class="side-item">
+
+                <span>⚙</span>
+
+                <span>Settings</span>
+
+            </button>
+
+            <button class="side-item">
+
+                <span>?</span>
+
+                <span>Help & Support</span>
+
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+        <!-- HEADER -->
+
+        <header class="header">
+
+            <button
+                class="menu-btn"
+                id="menuBtn"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
+
+
+            <div class="mobile-brand">
+
                 <img src="logo.png" alt="TETRON">
-            </div>
 
-            <strong>TETRON</strong>
-
-        </div>
-
-
-        <div class="header-actions">
-
-            <button id="themeBtn"
-                    title="Toggle theme">
-                ◐
-            </button>
-
-            <button title="Profile">
-                ◉
-            </button>
-
-        </div>
-
-    </header>
-
-
-    <!-- CHAT AREA -->
-    <section class="chat-area" id="chatArea">
-
-        <!-- WELCOME -->
-        <div class="welcome" id="welcome">
-
-            <div class="welcome-logo">
-
-                <img src="logo.png"
-                     alt="TETRON Logo">
+                <span>TETRON</span>
 
             </div>
 
 
-            <h1>
-                Welcome to <span>TETRON</span>
-            </h1>
+            <div class="header-actions">
+
+                <button
+                    id="themeBtn"
+                    title="Theme"
+                >
+                    ◐
+                </button>
+
+                <button title="Profile">
+                    ◉
+                </button>
+
+            </div>
+
+        </header>
 
 
-            <p>
-                Your intelligent AI assistant for
-                thinking, learning and creating.
+        <!-- ================= CHAT ================= -->
+
+        <section class="chat-area">
+
+            <div
+                class="welcome"
+                id="welcome"
+            >
+
+                <!-- LOGO -->
+
+                <div class="welcome-logo">
+
+                    <img
+                        src="logo.png"
+                        alt="TETRON Logo"
+                    >
+
+                </div>
+
+
+                <!-- TITLE -->
+
+                <h1>
+                    Welcome to
+                    <span>TETRON</span>
+                </h1>
+
+
+                <p>
+                    Your intelligent AI assistant for
+                    thinking, learning and creating.
+                </p>
+
+
+                <!-- SUGGESTIONS -->
+
+                <div class="suggestions">
+
+                    <button class="suggestion">
+
+                        <span class="suggestion-icon">
+                            💡
+                        </span>
+
+                        <span class="suggestion-content">
+
+                            <strong>
+                                Explore ideas
+                            </strong>
+
+                            <small>
+                                Help me brainstorm something
+                            </small>
+
+                        </span>
+
+                    </button>
+
+
+                    <button class="suggestion">
+
+                        <span class="suggestion-icon">
+                            📚
+                        </span>
+
+                        <span class="suggestion-content">
+
+                            <strong>
+                                Study with me
+                            </strong>
+
+                            <small>
+                                Explain a topic simply
+                            </small>
+
+                        </span>
+
+                    </button>
+
+
+                    <button class="suggestion">
+
+                        <span class="suggestion-icon">
+                            💻
+                        </span>
+
+                        <span class="suggestion-content">
+
+                            <strong>
+                                Write code
+                            </strong>
+
+                            <small>
+                                Build or debug a project
+                            </small>
+
+                        </span>
+
+                    </button>
+
+
+                    <button class="suggestion">
+
+                        <span class="suggestion-icon">
+                            ✨
+                        </span>
+
+                        <span class="suggestion-content">
+
+                            <strong>
+                                Create something
+                            </strong>
+
+                            <small>
+                                Write, plan or design
+                            </small>
+
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- MESSAGES -->
+
+            <div
+                class="messages"
+                id="messages"
+            ></div>
+
+        </section>
+
+
+        <!-- ================= INPUT ================= -->
+
+        <footer class="input-area">
+
+            <div class="input-box">
+
+                <button
+                    class="input-btn"
+                    title="Attach"
+                >
+                    ＋
+                </button>
+
+
+                <textarea
+                    id="messageInput"
+                    rows="1"
+                    placeholder="Message TETRON..."
+                ></textarea>
+
+
+                <button
+                    class="input-btn"
+                    title="Voice"
+                >
+                    🎙
+                </button>
+
+
+                <button
+                    class="send-btn"
+                    id="sendBtn"
+                    title="Send"
+                >
+                    ↑
+                </button>
+
+            </div>
+
+
+            <p class="disclaimer">
+                TETRON can make mistakes.
+                Check important information.
             </p>
 
+        </footer>
 
-            <!-- SUGGESTIONS -->
-            <div class="suggestions">
+    </main>
 
-                <button class="suggestion">
-
-                    <strong>
-                        💡 Explore ideas
-                    </strong>
-
-                    <small>
-                        Help me brainstorm something
-                    </small>
-
-                </button>
+</div>
 
 
-                <button class="suggestion">
+<!-- MOBILE OVERLAY -->
 
-                    <strong>
-                        📚 Study with me
-                    </strong>
-
-                    <small>
-                        Explain a topic simply
-                    </small>
-
-                </button>
+<div
+    class="overlay"
+    id="overlay"
+></div>
 
 
-                <button class="suggestion">
+<script src="script.js"></script>
 
-                    <strong>
-                        💻 Write code
-                    </strong>
-
-                    <small>
-                        Build or debug a project
-                    </small>
-
-                </button>
-
-
-                <button class="suggestion">
-
-                    <strong>
-                        ✍️ Create something
-                    </strong>
-
-                    <small>
-                        Write, plan or design
-                    </small>
-
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <!-- MESSAGES -->
-        <div class="messages" id="messages"></div>
-
-    </section>
-
-
-    <!-- INPUT AREA -->
-    <footer class="input-area">
-
-        <div class="input-box">
-
-            <button class="attach-btn"
-                    title="Attach file">
-                ＋
-            </button>
-
-
-            <textarea
-                id="messageInput"
-                placeholder="Message TETRON..."
-                rows="1"></textarea>
-
-
-            <button class="voice-btn"
-                    title="Voice input">
-                🎙
-            </button>
-
-
-            <button class="send-btn"
-                    id="sendBtn"
-                    title="Send">
-                ↑
-            </button>
-
-        </div>
-
-
-        <p class="disclaimer">
-            TETRON can make mistakes.
-            Check important information.
-        </p>
-
-    </footer>
-
-</main>
-
-</div><!-- MOBILE OVERLAY --><div class="overlay" id="overlay"></div><script src="script.js"></script></body>
-  </html>
+</body>
+                                </html>

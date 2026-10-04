@@ -2,92 +2,57 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const app = express();
+const { GoogleGenAI } = require("@google/genai");
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-
-/* ================================
-   MIDDLEWARE
-   ================================ */
+const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY
+});
 
 app.use(cors());
-
 app.use(express.json());
-
-/*
- * SERVE TETRON AI FRONTEND
- */
 app.use(express.static(__dirname));
 
-
-/* ================================
-   HEALTH CHECK
-   ================================ */
-
 app.get("/api/health", (req, res) => {
-
     res.json({
         success: true,
         message: "TETRON AI backend is online."
     });
-
 });
 
-
-/* ================================
-   CHAT ROUTE
-   ================================ */
-
 app.post("/api/chat", async (req, res) => {
-
     try {
-
         const { message } = req.body;
 
         if (!message || !message.trim()) {
-
             return res.status(400).json({
                 success: false,
                 error: "Message is required."
             });
-
         }
 
-
-        /*
-         * REAL AI CONNECTION
-         * WILL BE ADDED NEXT.
-         */
+        const response = await ai.models.generateContent({
+            model: "gemini-3.8-flash",
+            contents: message
+        });
 
         res.json({
             success: true,
-            reply: "TETRON AI backend received your message."
+            reply: response.text
         });
 
-
     } catch (error) {
-
         console.error("TETRON ERROR:", error);
 
         res.status(500).json({
             success: false,
-            error: "Something went wrong."
+            error: "TETRON AI could not process the request."
         });
-
     }
-
 });
 
-
-/* ================================
-   START SERVER
-   ================================ */
-
 app.listen(PORT, () => {
-
-    console.log(
-        `TETRON AI server running on port ${PORT}`
-    );
-
+    console.log(`TETRON AI server running on port ${PORT}`);
 });

@@ -1,10 +1,11 @@
 {
   "name": "tetron-ai",
   "version": "1.0.0",
-  "description": "TETRON AI backend",
+  "description": "TETRON AI - Neural Command Center",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

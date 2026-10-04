@@ -6,8 +6,19 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
+
+/* ================================
+   MIDDLEWARE
+   ================================ */
+
 app.use(cors());
+
 app.use(express.json());
+
+/*
+ * SERVE TETRON AI FRONTEND
+ */
+app.use(express.static(__dirname));
 
 
 /* ================================
@@ -43,6 +54,7 @@ app.post("/api/chat", async (req, res) => {
 
         }
 
+
         /*
          * REAL AI CONNECTION
          * WILL BE ADDED NEXT.
@@ -52,6 +64,7 @@ app.post("/api/chat", async (req, res) => {
             success: true,
             reply: "TETRON AI backend received your message."
         });
+
 
     } catch (error) {
 

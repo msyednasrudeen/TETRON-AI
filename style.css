@@ -683,6 +683,75 @@ button {
 
 
 /* =====================================================
+   CHAT MESSAGE ALIGNMENT
+   USER  → RIGHT
+   TETRON → LEFT
+   ===================================================== */
+
+.message {
+    width: fit-content;
+    max-width: 78%;
+
+    margin-bottom: 14px;
+
+    padding: 11px 14px;
+
+    border-radius: 14px;
+
+    font-size: 14px;
+    line-height: 1.55;
+
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+
+
+/* =====================================================
+   USER MESSAGE
+   ===================================================== */
+
+.message.user {
+    margin-left: auto;
+    margin-right: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(32,223,255,0.16),
+            rgba(72,124,255,0.14)
+        );
+
+    border:
+        1px solid
+        rgba(32,223,255,0.20);
+
+    color: #f5f7fb;
+
+    border-bottom-right-radius: 4px;
+}
+
+
+/* =====================================================
+   TETRON MESSAGE
+   ===================================================== */
+
+.message.assistant {
+    margin-left: 0;
+    margin-right: auto;
+
+    background:
+        rgba(255,255,255,0.045);
+
+    border:
+        1px solid var(--border);
+
+    color: #e8edf5;
+
+    border-bottom-left-radius: 4px;
+}
+
+
+/* =====================================================
    INPUT
    ===================================================== */
 
@@ -879,7 +948,7 @@ button {
             opacity 0.25s ease;
     }
 
-    .overlay.active {
+    .overlay.show {
         opacity: 1;
 
         visibility: visible;
@@ -1022,6 +1091,19 @@ button {
     .disclaimer {
         font-size: 8px;
     }
+
+    /* MOBILE MESSAGE ALIGNMENT */
+
+    .message {
+        max-width: 86%;
+
+        font-size: 13px;
+
+        padding:
+            10px
+            12px;
+    }
+
 }
 
 
@@ -1072,3 +1154,60 @@ button {
     }
 
 }
+
+/* =================================================
+   TETRON AI — MODE SELECTOR
+   ================================================= */
+
+.mode-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: min(820px, 100%);
+    margin: 0 auto 10px;
+    padding: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.mode-selector::-webkit-scrollbar {
+    display: none;
+}
+
+.mode-btn {
+    flex: 0 0 auto;
+    padding: 7px 13px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    color: #aeb8c8;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.mode-btn:hover {
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+}
+
+.mode-btn.active {
+    background: rgba(32,223,255,0.12);
+    border-color: rgba(32,223,255,0.45);
+    color: #20dfff;
+}
+
+@media (max-width: 600px) {
+    .mode-selector {
+        justify-content: flex-start;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .mode-btn {
+        padding: 6px 11px;
+        font-size: 11px;
+    }
+}
+

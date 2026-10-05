@@ -22,15 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const messages = document.getElementById("messages");
     const welcome = document.getElementById("welcome");
 
-
     /* =================================================
-       RESTORE CHAT HISTORY
+       LOAD SAVED CHAT
        ================================================= */
 
     const savedChat = localStorage.getItem("tetronChat");
 
     if (savedChat && messages) {
-
         messages.innerHTML = savedChat;
 
         if (welcome) {
@@ -42,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =================================================
-       SIDEBAR
+       MOBILE SIDEBAR
        ================================================= */
 
     if (menuBtn && sidebar && overlay) {
@@ -82,14 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =================================================
-       SAVE CHAT HISTORY
+       SAVE CHAT
        ================================================= */
 
     function saveChatHistory() {
 
-        if (!messages) {
-            return;
-        }
+        if (!messages) return;
 
         localStorage.setItem(
             "tetronChat",
@@ -97,11 +93,15 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
     }
-	    function setupChatHistory() {
 
-        if (!chatHistory) {
-            return;
-        }
+
+    /* =================================================
+       CHAT HISTORY
+       ================================================= */
+
+    function setupChatHistory() {
+
+        if (!chatHistory) return;
 
         const chatItems =
             chatHistory.querySelectorAll(".chat-item");
@@ -120,12 +120,30 @@ document.addEventListener("DOMContentLoaded", () => {
                     welcome.style.display = "none";
                 }
 
-                messages.scrollTop =
-                    messages.scrollHeight;
+                if (messages) {
+                    messages.scrollTop =
+                        messages.scrollHeight;
+                }
 
             });
 
         });
+
+    }
+
+
+    /* =================================================
+       ESCAPE HTML
+       ================================================= */
+
+    function escapeHTML(text) {
+
+        const div =
+            document.createElement("div");
+
+        div.textContent = text;
+
+        return div.innerHTML;
 
     }
 
@@ -136,37 +154,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function addMessage(text, type) {
 
-        if (!messages) {
-            return null;
-        }
+        if (!messages) return null;
 
-        const message = document.createElement("div");
+            document.createElement("div");
 
-        message.className = `message ${type}`;
+        message.className =
+            `message ${type}`;
 
         message.textContent = text;
 
         messages.appendChild(message);
 
-        messages.scrollTop = messages.scrollHeight;
+        messages.scrollTop =
+            messages.scrollHeight;
 
         saveChatHistory();
-	
-	        if (type === "user" && chatHistory) {
 
-            const chatItem = document.createElement("button");
 
-            chatItem.className = "chat-item";
+        /* ---------------------------------------------
+           ADD USER MESSAGE TO SIDEBAR HISTORY
+           --------------------------------------------- */
+
+        if (type === "user" && chatHistory) {
+
+            const chatItem =
+                document.createElement("button");
+
+            chatItem.className =
+                "chat-item";
 
             chatItem.innerHTML = `
                 <span class="chat-icon">○</span>
-                <span>${text}</span>
+                <span>${escapeHTML(text)}</span>
             `;
 
             chatHistory.appendChild(chatItem);
 
         }
+
         return message;
+
     }
 
 
@@ -176,9 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function removeTypingIndicator() {
 
-        if (!messages) {
-            return;
-        }
+        if (!messages) return;
 
         const typingMessages =
             messages.querySelectorAll(
@@ -191,9 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 message.textContent.trim() ===
                 "TETRON is thinking..."
             ) {
-
                 message.remove();
-
             }
 
         });
@@ -202,38 +225,110 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =================================================
+       AI SUGGESTIONS
+       ================================================= */
+
+    const suggestions =
+        document.querySelectorAll(".suggestion");
+
+    suggestions.forEach((suggestion) => {
+
+        suggestion.addEventListener("click", () => {
+
+            const title =
+                suggestion
+                    .querySelector("strong")
+                    ?.textContent
+                    .trim();
+
+
+            const modes = {
+
+                "Explore ideas": "ideas",
+                "Study with me": "study",
+                "Write code": "coding",
+                "Create something": "creative"
+
+            };
+            const prompts = {
+
+                "Explore ideas":
+                    "Help me brainstorm some creative project ideas.",
+
+                "Study with me":
+                    "Teach me a topic step by step in a simple way.",
+
+                "Write code":
+                    "Help me write and debug code step by step.",
+
+                "Create something":
+                    "Help me create something interesting and useful."
+
+            };
+
+
+            if (
+                messageInput &&
+                prompts[title]
+            ) {
+
+                window.tetronMode = modes[title] || "general";
+                messageInput.value =
+                    prompts[title];
+
+                messageInput.focus();
+
+            }
+
+        });
+
+    });
+
+
+    /* =================================================
        SEND MESSAGE
        ================================================= */
 
     async function sendMessage() {
 
+        if (!messageInput || !sendBtn) return;
+
+        const message = messageInput.value.trim();
+        const currentMode = window.tetronMode || "general";
+
         if (!messageInput || !sendBtn) {
             return;
         }
 
-        const message =
-            messageInput.value.trim();
+
+
 
         if (!message) {
             return;
         }
 
 
-        /* Hide welcome */
+        /* Hide welcome screen */
 
         if (welcome) {
             welcome.style.display = "none";
         }
 
 
-        /* User message */
+        /* Add user message */
 
         addMessage(
             message,
             "user"
         );
 
+
+        /* Clear input */
+
         messageInput.value = "";
+
+
+        /* Disable send button */
 
         sendBtn.disabled = true;
 
@@ -249,19 +344,22 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
 
             const response =
-                await fetch("/api/chat", {
+                await fetch(
+                    "/api/chat",
+                    {
+                        method: "POST",
 
-                    method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        message: message
-                    })
-
-                });
+                        body: JSON.stringify({
+                            message: message,
+                            mode: currentMode
+                        })
+                    }
+                );
 
 
             const data =
@@ -278,18 +376,28 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
 
-            /* Remove typing indicator */
+            /* Remove thinking message */
 
             removeTypingIndicator();
 
 
-            /* AI response */
+            /* Add AI reply */
 
             addMessage(
                 data.reply,
                 "assistant"
             );
 
+
+            /* Show model in console */
+
+            if (data.model) {
+
+                console.log(
+                    `TETRON MODEL: ${data.model}`
+                );
+
+            }
 
         } catch (error) {
 
@@ -299,12 +407,8 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-            /* Remove typing indicator */
-
             removeTypingIndicator();
 
-
-            /* Error message */
 
             addMessage(
                 "TETRON AI could not connect. Please try again.",
@@ -371,14 +475,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
         newChatBtn.addEventListener(
             "click",
-            () => {
+            async () => {
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/clear-memory",
+                            {
+                                method: "POST"
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (data.success) {
+
+                        console.log(
+                            "TETRON: Backend memory cleared"
+                        );
+
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "TETRON MEMORY CLEAR ERROR:",
+                        error
+                    );
+
+                }
+
+
+                /* Clear messages */
 
                 if (messages) {
                     messages.innerHTML = "";
                 }
 
 
-                /* Clear saved history */
+                /* Clear local storage */
 
                 localStorage.removeItem(
                     "tetronChat"
@@ -395,13 +534,50 @@ document.addEventListener("DOMContentLoaded", () => {
                 /* Clear input */
 
                 if (messageInput) {
+
                     messageInput.value = "";
+
                     messageInput.focus();
+
                 }
 
             }
         );
 
     }
-	    setupChatHistory();
+
+
+    /* =================================================
+       INITIALIZE
+       ================================================= */
+
+    /* =================================================
+       AI MODE SELECTOR
+       ================================================= */
+
+    const modeButtons = document.querySelectorAll(".mode-btn");
+
+    modeButtons.forEach((button) => {
+
+        button.addEventListener("click", () => {
+
+            modeButtons.forEach((btn) => {
+                btn.classList.remove("active");
+            });
+
+            button.classList.add("active");
+
+            window.tetronMode =
+                button.dataset.mode || "general";
+
+            console.log(
+                `TETRON MODE: ${window.tetronMode}`
+            );
+
+        });
+
+    });
+
+    setupChatHistory();
+
 });

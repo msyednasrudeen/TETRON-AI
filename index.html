@@ -2,11 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>TETRON AI</title>
 
@@ -18,8 +14,7 @@
 
 <div class="app">
 
-    <!-- ================= SIDEBAR ================= -->
-
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
 
         <div class="sidebar-header">
@@ -48,8 +43,6 @@
         </div>
 
 
-        <!-- NEW CHAT -->
-
         <button class="new-chat" id="newChat">
 
             <span class="plus">＋</span>
@@ -58,8 +51,6 @@
 
         </button>
 
-
-        <!-- CHAT HISTORY -->
 
         <div class="history" id="chatHistory">
 
@@ -94,8 +85,6 @@
         </div>
 
 
-        <!-- SIDEBAR BOTTOM -->
-
         <div class="sidebar-bottom">
 
             <button class="side-item">
@@ -119,12 +108,10 @@
     </aside>
 
 
-    <!-- ================= MAIN ================= -->
-
+    <!-- MAIN -->
     <main class="main">
 
         <!-- HEADER -->
-
         <header class="header">
 
             <button
@@ -163,16 +150,14 @@
         </header>
 
 
-        <!-- ================= CHAT ================= -->
-
+        <!-- CHAT AREA -->
         <section class="chat-area">
 
+            <!-- WELCOME -->
             <div
                 class="welcome"
                 id="welcome"
             >
-
-                <!-- LOGO -->
 
                 <div class="welcome-logo">
 
@@ -184,22 +169,18 @@
                 </div>
 
 
-                <!-- TITLE -->
-
                 <h1>
-                    Welcome to
-                    <span>TETRON</span>
+                    Welcome to <span>TETRON</span>
                 </h1>
 
 
                 <p>
-                    Your intelligent AI assistant for
-                    thinking, learning and creating.
+                    Your intelligent AI assistant for thinking,
+                    learning and creating.
                 </p>
 
 
-                <!-- SUGGESTIONS -->
-
+                <!-- AI SUGGESTIONS -->
                 <div class="suggestions">
 
                     <button class="suggestion">
@@ -291,7 +272,6 @@
 
 
             <!-- MESSAGES -->
-
             <div
                 class="messages"
                 id="messages"
@@ -300,10 +280,52 @@
         </section>
 
 
-        <!-- ================= INPUT ================= -->
-
+        <!-- INPUT AREA -->
         <footer class="input-area">
 
+
+            <!-- AI MODE SELECTOR -->
+            <div class="mode-selector">
+
+                <button
+                    class="mode-btn active"
+                    data-mode="general"
+                >
+                    General
+                </button>
+
+                <button
+                    class="mode-btn"
+                    data-mode="ideas"
+                >
+                    Ideas
+                </button>
+
+                <button
+                    class="mode-btn"
+                    data-mode="study"
+                >
+                    Study
+                </button>
+
+                <button
+                    class="mode-btn"
+                    data-mode="coding"
+                >
+                    Coding
+                </button>
+
+                <button
+                    class="mode-btn"
+                    data-mode="creative"
+                >
+                    Creative
+                </button>
+
+            </div>
+
+
+            <!-- INPUT BOX -->
             <div class="input-box">
 
                 <button
@@ -353,7 +375,6 @@
 
 
 <!-- MOBILE OVERLAY -->
-
 <div
     class="overlay"
     id="overlay"
@@ -363,4 +384,4 @@
 <script src="script.js"></script>
 
 </body>
-                                </html>
+</html>

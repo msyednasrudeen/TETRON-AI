@@ -7,27 +7,49 @@ const { GoogleGenAI } = require("@google/genai");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/* =====================================================
+   GEMINI AI
+   ===================================================== */
+
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
+/* =====================================================
+   MIDDLEWARE
+   ===================================================== */
+
 app.use(cors());
 app.use(express.json());
+
+/* =====================================================
+   ROOT ROUTE
+   ===================================================== */
+
+app.get("/", (req, res) => {
+    res.json({
+        success: true,
+        message: "TETRON AI backend is online."
+    });
+});
+
+/* =====================================================
+   STATIC FILES
+   ===================================================== */
+
 app.use(express.static(__dirname));
 
-
-/* =================================================
+/* =====================================================
    TETRON AI CONVERSATION MEMORY
-   ================================================= */
+   ===================================================== */
 
 const conversationHistory = [];
 
 const MAX_HISTORY = 20;
 
-
-/* =================================================
+/* =====================================================
    AI MODES
-   ================================================= */
+   ===================================================== */
 
 const modeInstructions = {
 
@@ -48,10 +70,9 @@ const modeInstructions = {
 
 };
 
-
-/* =================================================
+/* =====================================================
    HEALTH CHECK
-   ================================================= */
+   ===================================================== */
 
 app.get("/api/health", (req, res) => {
 
@@ -62,10 +83,9 @@ app.get("/api/health", (req, res) => {
 
 });
 
-
-/* =================================================
+/* =====================================================
    CHAT API
-   ================================================= */
+   ===================================================== */
 
 app.post("/api/chat", async (req, res) => {
 
@@ -76,10 +96,9 @@ app.post("/api/chat", async (req, res) => {
             mode = "general"
         } = req.body;
 
-
-        /* =========================================
+        /* ---------------------------------------------
            VALIDATE MESSAGE
-           ========================================= */
+           --------------------------------------------- */
 
         if (!message || !message.trim()) {
 
@@ -90,10 +109,9 @@ app.post("/api/chat", async (req, res) => {
 
         }
 
-
-        /* =========================================
+        /* ---------------------------------------------
            SELECT AI MODE
-           ========================================= */
+           --------------------------------------------- */
 
         const selectedMode =
             modeInstructions[mode]
@@ -103,29 +121,29 @@ app.post("/api/chat", async (req, res) => {
         const systemInstruction =
             modeInstructions[selectedMode];
 
-
         console.log(
             `TETRON: Mode = ${selectedMode}`
         );
 
-
-        /* =========================================
+        /* ---------------------------------------------
            ADD USER MESSAGE TO MEMORY
-           ========================================= */
+           --------------------------------------------- */
 
         conversationHistory.push({
+
             role: "user",
+
             parts: [
                 {
                     text: message.trim()
                 }
             ]
+
         });
 
-
-        /* =========================================
+        /* ---------------------------------------------
            LIMIT MEMORY
-           ========================================= */
+           --------------------------------------------- */
 
         if (
             conversationHistory.length >
@@ -140,33 +158,43 @@ app.post("/api/chat", async (req, res) => {
 
         }
 
-
-        /* =========================================
-           AVAILABLE MODELS
-           ========================================= */
+        /* ---------------------------------------------
+           AVAILABLE GEMINI MODELS
+           --------------------------------------------- */
 
         const models = [
+
             "gemini-3.1-flash-lite",
+
             "gemini-3.5-flash-lite",
+
             "gemini-2.5-flash-lite",
+
             "gemini-2.5-flash",
+
             "gemini-3.5-flash",
+
             "gemini-3.6-flash",
+
             "gemini-3.7-flash",
+
             "gemini-3.8-flash",
+
             "gemini-2.5-pro",
+
             "gemini-3.1-pro-preview"
+
         ];
 
+        /* ---------------------------------------------
+           MODEL FALLBACK
+           --------------------------------------------- */
 
         let response = null;
+
         let lastError = null;
+
         let successfulModel = null;
-
-
-        /* =========================================
-           MODEL FALLBACK SYSTEM
-           ========================================= */
 
         for (const model of models) {
 
@@ -175,7 +203,6 @@ app.post("/api/chat", async (req, res) => {
                 console.log(
                     `TETRON: Trying ${model}`
                 );
-
 
                 response =
                     await ai.models.generateContent({
@@ -186,28 +213,25 @@ app.post("/api/chat", async (req, res) => {
                             conversationHistory,
 
                         config: {
+
                             systemInstruction:
                                 systemInstruction
+
                         }
 
                     });
 
-
                 successfulModel = model;
-
 
                 console.log(
                     `TETRON: ${model} succeeded`
                 );
 
-
                 break;
-
 
             } catch (error) {
 
                 lastError = error;
-
 
                 console.log(
                     `TETRON: ${model} failed - ${
@@ -220,10 +244,9 @@ app.post("/api/chat", async (req, res) => {
 
         }
 
-
-        /* =========================================
+        /* ---------------------------------------------
            ALL MODELS FAILED
-           ========================================= */
+           --------------------------------------------- */
 
         if (!response) {
 
@@ -233,10 +256,9 @@ app.post("/api/chat", async (req, res) => {
 
         }
 
-
-        /* =========================================
+        /* ---------------------------------------------
            ADD AI RESPONSE TO MEMORY
-           ========================================= */
+           --------------------------------------------- */
 
         conversationHistory.push({
 
@@ -250,10 +272,9 @@ app.post("/api/chat", async (req, res) => {
 
         });
 
-
-        /* =========================================
+        /* ---------------------------------------------
            SEND RESPONSE
-           ========================================= */
+           --------------------------------------------- */
 
         res.json({
 
@@ -269,14 +290,12 @@ app.post("/api/chat", async (req, res) => {
 
         });
 
-
     } catch (error) {
 
         console.error(
             "TETRON ERROR:",
             error
         );
-
 
         res.status(500).json({
 
@@ -291,10 +310,9 @@ app.post("/api/chat", async (req, res) => {
 
 });
 
-
-/* =================================================
+/* =====================================================
    CLEAR CONVERSATION MEMORY
-   ================================================= */
+   ===================================================== */
 
 app.post("/api/clear-memory", (req, res) => {
 
@@ -315,15 +333,24 @@ app.post("/api/clear-memory", (req, res) => {
 
 });
 
+/* =====================================================
+   LOCAL SERVER
+   ===================================================== */
 
-/* =================================================
-   START SERVER
-   ================================================= */
+if (require.main === module) {
 
-app.listen(PORT, () => {
+    app.listen(PORT, () => {
 
-    console.log(
-        `TETRON AI server running on port ${PORT}`
-    );
+        console.log(
+            `TETRON AI server running on port ${PORT}`
+        );
 
-});
+    });
+
+}
+
+/* =====================================================
+   VERCEL EXPORT
+   ===================================================== */
+
+module.exports = app;

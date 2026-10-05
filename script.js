@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const response =
                 await fetch(
-                    "/api/chat",
+                    "https://dnassrudeens-projects.vercel.app/api/chat",
                     {
                         method: "POST",
 
@@ -481,7 +481,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     const response =
                         await fetch(
-                            "/api/clear-memory",
+                            "https://dnassrudeens-projects.vercel.app/api/clear-memory",
                             {
                                 method: "POST"
                             }

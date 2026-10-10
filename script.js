@@ -1,12 +1,4 @@
-/* =====================================================
-   TETRON AI — FRONTEND + GEMINI BACKEND
-   ===================================================== */
-
 document.addEventListener("DOMContentLoaded", () => {
-
-    /* =================================================
-       ELEMENTS
-       ================================================= */
 
     const sidebar = document.getElementById("sidebar");
     const menuBtn = document.getElementById("menuBtn");
@@ -22,330 +14,456 @@ document.addEventListener("DOMContentLoaded", () => {
     const messages = document.getElementById("messages");
     const welcome = document.getElementById("welcome");
 
-    /* =================================================
-       LOAD SAVED CHAT
-       ================================================= */
+    const attachBtn = document.getElementById("attachBtn");
+    const voiceBtn = document.getElementById("voiceBtn");
 
-    const savedChat = localStorage.getItem("tetronChat");
+    const modeButtons = document.querySelectorAll(".mode-btn");
+    const suggestions = document.querySelectorAll(".suggestion");
 
-    if (savedChat && messages) {
-        messages.innerHTML = savedChat;
 
-        if (welcome) {
-            welcome.style.display = "none";
+    /* =====================================================
+       STATE
+       ===================================================== */
+
+    let currentMode = "general";
+    let chatMessages = [];
+    let isSending = false;
+
+
+    /* =====================================================
+       STORAGE
+       ===================================================== */
+
+    function saveChat() {
+
+        try {
+
+            localStorage.setItem(
+                "tetronChat",
+                JSON.stringify(chatMessages)
+            );
+
+        } catch (error) {
+
+            console.error(
+                "TETRON STORAGE ERROR:",
+                error
+            );
+
         }
 
-        messages.scrollTop = messages.scrollHeight;
     }
 
 
-    /* =================================================
-       MOBILE SIDEBAR
-       ================================================= */
+    function loadChat() {
 
-    if (menuBtn && sidebar && overlay) {
+        try {
 
-        menuBtn.addEventListener("click", () => {
+            const savedChat =
+                localStorage.getItem("tetronChat");
 
+            if (!savedChat) {
+                return;
+            }
+
+            const data =
+                JSON.parse(savedChat);
+
+            if (!Array.isArray(data)) {
+                return;
+            }
+
+            chatMessages = data;
+
+            renderMessages();
+
+        } catch (error) {
+
+            console.error(
+                "TETRON LOAD ERROR:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       SIDEBAR
+       ===================================================== */
+
+    function openSidebar() {
+
+        if (sidebar) {
             sidebar.classList.add("open");
+        }
+
+        if (overlay) {
             overlay.classList.add("show");
-
-        });
+        }
 
     }
 
 
-    if (closeSidebar && sidebar && overlay) {
+    function closeSidebarMenu() {
 
-        closeSidebar.addEventListener("click", () => {
-
+        if (sidebar) {
             sidebar.classList.remove("open");
-            overlay.classList.remove("show");
+        }
 
-        });
+        if (overlay) {
+            overlay.classList.remove("show");
+        }
 
     }
 
 
-    if (overlay && sidebar) {
+    if (menuBtn) {
 
-        overlay.addEventListener("click", () => {
-
-            sidebar.classList.remove("open");
-            overlay.classList.remove("show");
-
-        });
-
-    }
-
-
-    /* =================================================
-       SAVE CHAT
-       ================================================= */
-
-    function saveChatHistory() {
-
-        if (!messages) return;
-
-        localStorage.setItem(
-            "tetronChat",
-            messages.innerHTML
+        menuBtn.addEventListener(
+            "click",
+            openSidebar
         );
 
     }
 
 
-    /* =================================================
-       CHAT HISTORY
-       ================================================= */
+    if (closeSidebar) {
 
-    function setupChatHistory() {
-
-        if (!chatHistory) return;
-
-        const chatItems =
-            chatHistory.querySelectorAll(".chat-item");
-
-        chatItems.forEach((item) => {
-
-            item.addEventListener("click", () => {
-
-                chatItems.forEach((chat) => {
-                    chat.classList.remove("active");
-                });
-
-                item.classList.add("active");
-
-                if (welcome) {
-                    welcome.style.display = "none";
-                }
-
-                if (messages) {
-                    messages.scrollTop =
-                        messages.scrollHeight;
-                }
-
-            });
-
-        });
+        closeSidebar.addEventListener(
+            "click",
+            closeSidebarMenu
+        );
 
     }
 
 
-    /* =================================================
-       ESCAPE HTML
-       ================================================= */
+    if (overlay) {
 
-    function escapeHTML(text) {
-
-        const div =
-            document.createElement("div");
-
-        div.textContent = text;
-
-        return div.innerHTML;
+        overlay.addEventListener(
+            "click",
+            closeSidebarMenu
+        );
 
     }
 
 
-    /* =================================================
-       ADD MESSAGE
-       ================================================= */
+    /* =====================================================
+       MODE
+       ===================================================== */
 
-    function addMessage(text, type) {
+    function setMode(mode) {
 
-        if (!messages) return null;
+        const validModes = [
+            "general",
+            "ideas",
+            "study",
+            "coding",
+            "creative"
+        ];
 
-            document.createElement("div");
-
-        message.className =
-            `message ${type}`;
-
-        message.textContent = text;
-
-        messages.appendChild(message);
-
-        messages.scrollTop =
-            messages.scrollHeight;
-
-        saveChatHistory();
-
-
-        /* ---------------------------------------------
-           ADD USER MESSAGE TO SIDEBAR HISTORY
-           --------------------------------------------- */
-
-        if (type === "user" && chatHistory) {
-
-            const chatItem =
-                document.createElement("button");
-
-            chatItem.className =
-                "chat-item";
-
-            chatItem.innerHTML = `
-                <span class="chat-icon">○</span>
-                <span>${escapeHTML(text)}</span>
-            `;
-
-            chatHistory.appendChild(chatItem);
-
+        if (!validModes.includes(mode)) {
+            mode = "general";
         }
 
-        return message;
+        currentMode = mode;
 
-    }
+        modeButtons.forEach((button) => {
 
-
-    /* =================================================
-       REMOVE TYPING INDICATOR
-       ================================================= */
-
-    function removeTypingIndicator() {
-
-        if (!messages) return;
-
-        const typingMessages =
-            messages.querySelectorAll(
-                ".message.assistant"
+            button.classList.toggle(
+                "active",
+                button.dataset.mode === mode
             );
 
-        typingMessages.forEach((message) => {
-
-            if (
-                message.textContent.trim() ===
-                "TETRON is thinking..."
-            ) {
-                message.remove();
-            }
-
         });
+
+        console.log(
+            "TETRON MODE:",
+            mode
+        );
 
     }
 
 
-    /* =================================================
-       AI SUGGESTIONS
-       ================================================= */
+    modeButtons.forEach((button) => {
 
-    const suggestions =
-        document.querySelectorAll(".suggestion");
+        button.addEventListener(
+            "click",
+            () => {
 
-    suggestions.forEach((suggestion) => {
+                setMode(
+                    button.dataset.mode
+                );
 
-        suggestion.addEventListener("click", () => {
-
-            const title =
-                suggestion
-                    .querySelector("strong")
-                    ?.textContent
-                    .trim();
-
-
-            const modes = {
-
-                "Explore ideas": "ideas",
-                "Study with me": "study",
-                "Write code": "coding",
-                "Create something": "creative"
-
-            };
-            const prompts = {
-
-                "Explore ideas":
-                    "Help me brainstorm some creative project ideas.",
-
-                "Study with me":
-                    "Teach me a topic step by step in a simple way.",
-
-                "Write code":
-                    "Help me write and debug code step by step.",
-
-                "Create something":
-                    "Help me create something interesting and useful."
-
-            };
-
-
-            if (
-                messageInput &&
-                prompts[title]
-            ) {
-
-                window.tetronMode = modes[title] || "general";
-                messageInput.value =
-                    prompts[title];
-
-                messageInput.focus();
+                if (window.innerWidth <= 800) {
+                    closeSidebarMenu();
+                }
 
             }
-
-        });
+        );
 
     });
 
 
-    /* =================================================
-       SEND MESSAGE
-       ================================================= */
+    /* =====================================================
+       HTML ESCAPE
+       ===================================================== */
 
-    async function sendMessage() {
+    function escapeHTML(text) {
 
-        if (!messageInput || !sendBtn) return;
+        const element =
+            document.createElement("div");
 
-        const message = messageInput.value.trim();
-        const currentMode = window.tetronMode || "general";
+        element.textContent = text;
 
-        if (!messageInput || !sendBtn) {
+        return element.innerHTML;
+
+    }
+
+
+    /* =====================================================
+       SCROLL
+       ===================================================== */
+
+    function scrollToBottom() {
+
+        if (!messages) {
             return;
         }
 
+        messages.scrollTop =
+            messages.scrollHeight;
+
+    }
 
 
+    /* =====================================================
+       ADD MESSAGE TO SCREEN
+       ===================================================== */
 
-        if (!message) {
+    function addMessageToDOM(
+        text,
+        role
+    ) {
+
+        if (!messages) {
             return;
         }
 
+        const row =
+            document.createElement("div");
 
-        /* Hide welcome screen */
+        row.className =
+            "message-row " + role;
+
+        const avatar =
+            document.createElement("div");
+
+        avatar.className =
+            "message-avatar";
+
+        avatar.textContent =
+            role === "user"
+                ? "YOU"
+                : "T";
+
+        const bubble =
+            document.createElement("div");
+
+        bubble.className =
+            "message-bubble";
+
+        bubble.innerHTML =
+            escapeHTML(text)
+                .replace(/\n/g, "<br>");
+
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+
+        messages.appendChild(row);
+
+        scrollToBottom();
+
+    }
+
+
+    function addMessage(
+        text,
+        role
+    ) {
+
+        chatMessages.push({
+            text: text,
+            role: role
+        });
+
+        addMessageToDOM(
+            text,
+            role
+        );
+
+        saveChat();
+
+    }
+
+
+    /* =====================================================
+       RENDER SAVED CHAT
+       ===================================================== */
+
+    function renderMessages() {
+
+        if (!messages) {
+            return;
+        }
+
+        messages.innerHTML = "";
+
+        if (chatMessages.length === 0) {
+
+            if (welcome) {
+                messages.appendChild(welcome);
+                welcome.style.display = "";
+            }
+
+            return;
+
+        }
 
         if (welcome) {
             welcome.style.display = "none";
         }
 
+        chatMessages.forEach((item) => {
 
-        /* Add user message */
+            addMessageToDOM(
+                item.text,
+                item.role
+            );
+
+        });
+
+        scrollToBottom();
+
+    }
+
+
+    /* =====================================================
+       TYPING
+       ===================================================== */
+
+    function showTyping() {
+
+        if (!messages) {
+            return;
+        }
+
+        const row =
+            document.createElement("div");
+
+        row.id =
+            "tetronTyping";
+
+        row.className =
+            "message-row assistant";
+
+        const avatar =
+            document.createElement("div");
+
+        avatar.className =
+            "message-avatar";
+
+        avatar.textContent = "T";
+
+        const bubble =
+            document.createElement("div");
+
+        bubble.className =
+            "message-bubble typing";
+
+        bubble.textContent =
+            "TETRON is thinking...";
+
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+
+        messages.appendChild(row);
+
+        scrollToBottom();
+
+    }
+
+
+    function removeTyping() {
+
+        const element =
+            document.getElementById(
+                "tetronTyping"
+            );
+
+        if (element) {
+            element.remove();
+        }
+
+    }
+
+
+    /* =====================================================
+       SEND MESSAGE
+       ===================================================== */
+
+    async function sendMessage() {
+
+        if (isSending) {
+            return;
+        }
+
+        if (!messageInput || !sendBtn) {
+
+            console.error(
+                "TETRON: Input or send button not found."
+            );
+
+            return;
+
+        }
+
+        const message =
+            messageInput.value.trim();
+
+        if (!message) {
+            return;
+        }
+
+        isSending = true;
+
+        sendBtn.disabled = true;
+
+        if (welcome) {
+            welcome.style.display = "none";
+        }
 
         addMessage(
             message,
             "user"
         );
 
-
-        /* Clear input */
-
         messageInput.value = "";
 
+        autoResize();
 
-        /* Disable send button */
-
-        sendBtn.disabled = true;
-
-
-        /* Typing indicator */
-
-        addMessage(
-            "TETRON is thinking...",
-            "assistant"
-        );
-
+        showTyping();
 
         try {
 
+            console.log(
+                "TETRON: Sending request..."
+            );
+
             const response =
                 await fetch(
-                    "https://dnassrudeens-projects.vercel.app/api/chat",
+                    "/api/chat",
                     {
                         method: "POST",
 
@@ -361,12 +479,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 );
 
+            console.log(
+                "TETRON HTTP:",
+                response.status
+            );
 
             const data =
                 await response.json();
 
-
-            if (!response.ok) {
+            if (
+                !response.ok ||
+                !data.success
+            ) {
 
                 throw new Error(
                     data.error ||
@@ -375,29 +499,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
             }
 
-
-            /* Remove thinking message */
-
-            removeTypingIndicator();
-
-
-            /* Add AI reply */
+            removeTyping();
 
             addMessage(
-                data.reply,
+                data.reply ||
+                "TETRON returned no reply.",
                 "assistant"
             );
 
-
-            /* Show model in console */
-
-            if (data.model) {
-
-                console.log(
-                    `TETRON MODEL: ${data.model}`
-                );
-
-            }
+            console.log(
+                "TETRON MODEL:",
+                data.model
+            );
 
         } catch (error) {
 
@@ -406,9 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 error
             );
 
-
-            removeTypingIndicator();
-
+            removeTyping();
 
             addMessage(
                 "TETRON AI could not connect. Please try again.",
@@ -416,6 +527,8 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
         } finally {
+
+            isSending = false;
 
             sendBtn.disabled = false;
 
@@ -425,10 +538,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
-
-    /* =================================================
-       SEND BUTTON
-       ================================================= */
 
     if (sendBtn) {
 
@@ -440,9 +549,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =================================================
-       ENTER TO SEND
-       ================================================= */
+    /* =====================================================
+       ENTER KEY
+       ===================================================== */
 
     if (messageInput) {
 
@@ -467,9 +576,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =================================================
+    /* =====================================================
+       TEXTAREA RESIZE
+       ===================================================== */
+
+    function autoResize() {
+
+        if (!messageInput) {
+            return;
+        }
+
+        messageInput.style.height =
+            "auto";
+
+        messageInput.style.height =
+            Math.min(
+                messageInput.scrollHeight,
+                140
+            ) + "px";
+
+    }
+
+
+    if (messageInput) {
+
+        messageInput.addEventListener(
+            "input",
+            autoResize
+        );
+
+    }
+
+
+    /* =====================================================
        NEW CHAT
-       ================================================= */
+       ===================================================== */
 
     if (newChatBtn) {
 
@@ -481,63 +622,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     const response =
                         await fetch(
-                            "https://dnassrudeens-projects.vercel.app/api/clear-memory",
+                            "/api/clear-memory",
                             {
                                 method: "POST"
                             }
                         );
 
-
                     const data =
                         await response.json();
 
+                    if (!response.ok) {
 
-                    if (data.success) {
-
-                        console.log(
-                            "TETRON: Backend memory cleared"
+                        throw new Error(
+                            data.error ||
+                            "Could not clear memory."
                         );
 
+                    }
+
+                    chatMessages = [];
+
+                    localStorage.removeItem(
+                        "tetronChat"
+                    );
+
+                    renderMessages();
+
+                    setMode("general");
+
+                    console.log(
+                        "TETRON: New chat started."
+                    );
+
+                    if (
+                        window.innerWidth <= 800
+                    ) {
+                        closeSidebarMenu();
                     }
 
                 } catch (error) {
 
                     console.error(
-                        "TETRON MEMORY CLEAR ERROR:",
+                        "TETRON NEW CHAT ERROR:",
                         error
                     );
-
-                }
-
-
-                /* Clear messages */
-
-                if (messages) {
-                    messages.innerHTML = "";
-                }
-
-
-                /* Clear local storage */
-
-                localStorage.removeItem(
-                    "tetronChat"
-                );
-
-
-                /* Show welcome */
-
-                if (welcome) {
-                    welcome.style.display = "";
-                }
-
-
-                /* Clear input */
-
-                if (messageInput) {
-
-                    messageInput.value = "";
-
-                    messageInput.focus();
 
                 }
 
@@ -547,37 +675,88 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =================================================
-       INITIALIZE
-       ================================================= */
+    /* =====================================================
+       SUGGESTIONS
+       ===================================================== */
 
-    /* =================================================
-       AI MODE SELECTOR
-       ================================================= */
+    suggestions.forEach((button) => {
 
-    const modeButtons = document.querySelectorAll(".mode-btn");
+        button.addEventListener(
+            "click",
+            () => {
 
-    modeButtons.forEach((button) => {
+                const prompt =
+                    button.dataset.prompt;
 
-        button.addEventListener("click", () => {
+                if (!prompt || !messageInput) {
+                    return;
+                }
 
-            modeButtons.forEach((btn) => {
-                btn.classList.remove("active");
-            });
+                messageInput.value =
+                    prompt;
 
-            button.classList.add("active");
+                autoResize();
 
-            window.tetronMode =
-                button.dataset.mode || "general";
+                messageInput.focus();
 
-            console.log(
-                `TETRON MODE: ${window.tetronMode}`
-            );
-
-        });
+            }
+        );
 
     });
 
-    setupChatHistory();
+
+    /* =====================================================
+       ATTACHMENT
+       ===================================================== */
+
+    if (attachBtn) {
+
+        attachBtn.addEventListener(
+            "click",
+            () => {
+
+                console.log(
+                    "TETRON: Attachment feature coming soon."
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       VOICE
+       ===================================================== */
+
+    if (voiceBtn) {
+
+        voiceBtn.addEventListener(
+            "click",
+            () => {
+
+                console.log(
+                    "TETRON: Voice feature coming soon."
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       START
+       ===================================================== */
+
+    loadChat();
+
+    setMode("general");
+
+    autoResize();
+
+    console.log(
+        "TETRON: Frontend initialized."
+    );
 
 });

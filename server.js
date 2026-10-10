@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 /* =====================================================
-   GEMINI AI
+   TETRON AI
    ===================================================== */
 
 const ai = new GoogleGenAI({
@@ -20,87 +20,107 @@ const ai = new GoogleGenAI({
    ===================================================== */
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 /* =====================================================
-   ROOT ROUTE
-   ===================================================== */
-
-app.get("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "TETRON AI backend is online."
-    });
-});
-
-/* =====================================================
-   STATIC FILES
+   FRONTEND
    ===================================================== */
 
 app.use(express.static(__dirname));
 
 /* =====================================================
-   TETRON AI CONVERSATION MEMORY
+   GEMINI MODELS
    ===================================================== */
 
-const conversationHistory = [];
+/*
+   Ordered from newest/preferred to fallback.
+
+   Specialized Live / TTS / Image / Embedding models
+   are intentionally not included because this endpoint
+   is for normal text chat.
+*/
+
+const GEMINI_MODELS = [
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-3.1-pro-preview",
+    "gemini-3-flash-preview",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-pro"
+];
+
+/* =====================================================
+   TETRON MODES
+   ===================================================== */
+
+const MODE_INSTRUCTIONS = {
+
+    general:
+        "You are TETRON AI, a helpful intelligent AI assistant. Give clear, accurate, useful and easy-to-understand answers.",
+
+    ideas:
+        "You are TETRON AI Idea Mode. Help the user generate creative, practical and original ideas. Give structured suggestions and useful next steps.",
+
+    study:
+        "You are TETRON AI Study Mode. Teach concepts clearly and step by step. Use simple explanations, examples, and short summaries when useful. Help the student understand the topic.",
+
+    coding:
+        "You are TETRON AI Coding Mode. Help with programming, debugging, software development and technical projects. Give clean code, explain important parts, and identify errors clearly.",
+
+    creative:
+        "You are TETRON AI Creative Mode. Help the user create writing, concepts, designs, plans and other creative work. Be original, practical and well structured."
+};
+
+/* =====================================================
+   CONVERSATION MEMORY
+   ===================================================== */
+
+let conversationHistory = [];
 
 const MAX_HISTORY = 20;
 
 /* =====================================================
-   AI MODES
-   ===================================================== */
-
-const modeInstructions = {
-
-    general:
-        "You are TETRON AI, a helpful intelligent assistant. Give clear, accurate and useful answers.",
-
-    ideas:
-        "You are TETRON AI Idea Mode. Help the user brainstorm creative, practical and original ideas. Give structured suggestions and explain useful next steps.",
-
-    study:
-        "You are TETRON AI Study Mode. Teach concepts clearly and step by step. Use simple explanations, examples and short summaries when useful. Help the student understand rather than just giving unexplained answers.",
-
-    coding:
-        "You are TETRON AI Coding Mode. Help with programming, debugging and software projects. Give clean code, explain important parts and identify likely errors clearly.",
-
-    creative:
-        "You are TETRON AI Creative Mode. Help the user create writing, plans, designs, concepts and other creative work. Be practical, original and well structured."
-
-};
-
-/* =====================================================
-   HEALTH CHECK
+   HEALTH
    ===================================================== */
 
 app.get("/api/health", (req, res) => {
 
     res.json({
         success: true,
-        message: "TETRON AI backend is online."
+        service: "TETRON AI",
+        status: "online"
     });
 
 });
 
 /* =====================================================
-   CHAT API
+   CHAT
    ===================================================== */
 
 app.post("/api/chat", async (req, res) => {
 
     try {
 
-        const {
-            message,
-            mode = "general"
-        } = req.body;
-
         /* ---------------------------------------------
            VALIDATE MESSAGE
            --------------------------------------------- */
 
-        if (!message || !message.trim()) {
+        const message =
+            typeof req.body?.message === "string"
+                ? req.body.message.trim()
+                : "";
+
+        const requestedMode =
+            typeof req.body?.mode === "string"
+                ? req.body.mode
+                : "general";
+
+        if (!message) {
 
             return res.status(400).json({
                 success: false,
@@ -110,23 +130,23 @@ app.post("/api/chat", async (req, res) => {
         }
 
         /* ---------------------------------------------
-           SELECT AI MODE
+           SELECT MODE
            --------------------------------------------- */
 
-        const selectedMode =
-            modeInstructions[mode]
-                ? mode
+        const mode =
+            MODE_INSTRUCTIONS[requestedMode]
+                ? requestedMode
                 : "general";
 
         const systemInstruction =
-            modeInstructions[selectedMode];
+            MODE_INSTRUCTIONS[mode];
 
         console.log(
-            `TETRON: Mode = ${selectedMode}`
+            `TETRON: Mode = ${mode}`
         );
 
         /* ---------------------------------------------
-           ADD USER MESSAGE TO MEMORY
+           ADD USER MESSAGE
            --------------------------------------------- */
 
         conversationHistory.push({
@@ -135,7 +155,7 @@ app.post("/api/chat", async (req, res) => {
 
             parts: [
                 {
-                    text: message.trim()
+                    text: message
                 }
             ]
 
@@ -150,53 +170,24 @@ app.post("/api/chat", async (req, res) => {
             MAX_HISTORY
         ) {
 
-            conversationHistory.splice(
-                0,
-                conversationHistory.length -
-                    MAX_HISTORY
-            );
+            conversationHistory =
+                conversationHistory.slice(
+                    -MAX_HISTORY
+                );
 
         }
 
         /* ---------------------------------------------
-           AVAILABLE GEMINI MODELS
-           --------------------------------------------- */
-
-        const models = [
-
-            "gemini-3.1-flash-lite",
-
-            "gemini-3.5-flash-lite",
-
-            "gemini-2.5-flash-lite",
-
-            "gemini-2.5-flash",
-
-            "gemini-3.5-flash",
-
-            "gemini-3.6-flash",
-
-            "gemini-3.7-flash",
-
-            "gemini-3.8-flash",
-
-            "gemini-2.5-pro",
-
-            "gemini-3.1-pro-preview"
-
-        ];
-
-        /* ---------------------------------------------
-           MODEL FALLBACK
+           TRY GEMINI MODELS
            --------------------------------------------- */
 
         let response = null;
-
+        let successfulModel = null;
         let lastError = null;
 
-        let successfulModel = null;
-
-        for (const model of models) {
+        for (
+            const model of GEMINI_MODELS
+        ) {
 
             try {
 
@@ -213,10 +204,8 @@ app.post("/api/chat", async (req, res) => {
                             conversationHistory,
 
                         config: {
-
                             systemInstruction:
                                 systemInstruction
-
                         }
 
                     });
@@ -235,8 +224,9 @@ app.post("/api/chat", async (req, res) => {
 
                 console.log(
                     `TETRON: ${model} failed - ${
-                        error.status ||
-                        error.message
+                        error?.status ||
+                        error?.message ||
+                        "Unknown error"
                     }`
                 );
 
@@ -252,12 +242,34 @@ app.post("/api/chat", async (req, res) => {
 
             conversationHistory.pop();
 
-            throw lastError;
+            throw lastError ||
+                new Error(
+                    "All Gemini models failed."
+                );
 
         }
 
         /* ---------------------------------------------
-           ADD AI RESPONSE TO MEMORY
+           GET RESPONSE TEXT
+           --------------------------------------------- */
+
+        const reply =
+            typeof response.text === "string"
+                ? response.text.trim()
+                : "";
+
+        if (!reply) {
+
+            conversationHistory.pop();
+
+            throw new Error(
+                "Gemini returned an empty response."
+            );
+
+        }
+
+        /* ---------------------------------------------
+           SAVE AI RESPONSE
            --------------------------------------------- */
 
         conversationHistory.push({
@@ -266,25 +278,25 @@ app.post("/api/chat", async (req, res) => {
 
             parts: [
                 {
-                    text: response.text
+                    text: reply
                 }
             ]
 
         });
 
         /* ---------------------------------------------
-           SEND RESPONSE
+           RESPONSE
            --------------------------------------------- */
 
-        res.json({
+        return res.json({
 
             success: true,
 
-            reply: response.text,
+            reply: reply,
 
             model: successfulModel,
 
-            mode: selectedMode,
+            mode: mode,
 
             memory: true
 
@@ -297,7 +309,7 @@ app.post("/api/chat", async (req, res) => {
             error
         );
 
-        res.status(500).json({
+        return res.status(500).json({
 
             success: false,
 
@@ -311,18 +323,18 @@ app.post("/api/chat", async (req, res) => {
 });
 
 /* =====================================================
-   CLEAR CONVERSATION MEMORY
+   CLEAR MEMORY
    ===================================================== */
 
 app.post("/api/clear-memory", (req, res) => {
 
-    conversationHistory.length = 0;
+    conversationHistory = [];
 
     console.log(
         "TETRON: Conversation memory cleared"
     );
 
-    res.json({
+    return res.json({
 
         success: true,
 
@@ -334,7 +346,23 @@ app.post("/api/clear-memory", (req, res) => {
 });
 
 /* =====================================================
-   LOCAL SERVER
+   404 API HANDLER
+   ===================================================== */
+
+app.use("/api", (req, res) => {
+
+    res.status(404).json({
+
+        success: false,
+
+        error: "TETRON API route not found."
+
+    });
+
+});
+
+/* =====================================================
+   START SERVER
    ===================================================== */
 
 if (require.main === module) {
@@ -342,7 +370,7 @@ if (require.main === module) {
     app.listen(PORT, () => {
 
         console.log(
-            `TETRON AI server running on port ${PORT}`
+            `TETRON AI running on port ${PORT}`
         );
 
     });
